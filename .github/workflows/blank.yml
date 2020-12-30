@@ -32,4 +32,13 @@ jobs:
         run: |
           URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${{ github.event.pull_request.number }}/files"
           FILES=$(curl -s -X GET -G $URL | jq -r '.[] | .filename')
+          $FILES > "check-file-names.csv"
           echo $FILES
+      
+      - name: Validate names
+        run: |
+          library(convo)
+          convo <- read_convo("sql-config.yml")
+          files <- readLines("check-file-names.csv")
+          evaluate_convo(convo, files, sep = "-")
+        shell: Rscript {0}
